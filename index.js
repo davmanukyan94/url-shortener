@@ -21,10 +21,16 @@ app.get('/', function(req, res) {
 
 app.post('/api/shorturl', function(req, res) {
   const {url} = req.body
-  dns.lookup(url,{},(err)=>{
-    if(err){
-      res.json({ error: 'invalid url' })
+  const splitUrl = url.split("https://")
+  if(splitUrl[1]==null){
+    res.json({ error: 'invalid url' })
       return
+  }
+  dns.lookup(splitUrl[1],(err)=>{
+    if(err){
+      console.log(err)
+      res.json({ error: 'invalid url' })
+      return 
     }
     const index = arr.findIndex(item=>item===url)
     if(index>-1){
@@ -37,9 +43,9 @@ app.post('/api/shorturl', function(req, res) {
 });
 
 app.get('/api/shorturl/:id',(req,res)=>{
-  const {id} = req.params
-  const url = arr[+id];
-  res.redirect(`https://${url}`);
+const {id} = req.params
+const url = arr[+id];
+res.redirect(url);
 })
 
 app.listen(port, function() {
