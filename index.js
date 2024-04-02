@@ -1,27 +1,29 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
 const app = express();
 const bodyParser = require("body-parser");
 const dns = require("dns");
+const urlParser = require("url");
+
 
 const port = process.env.PORT || 3000;
 let arr = [];
 
 app.use(cors());
 
-app.use("/public", express.static(`${process.cwd()}/public`));
+app.use('/public', express.static(`${process.cwd()}/public`));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/", function (req, res) {
-  res.sendFile(process.cwd() + "/views/index.html");
+app.get('/', function(req, res) {
+  res.sendFile(process.cwd() + '/views/index.html');
 });
 
 app.post("/api/shorturl", function (req, res) {
   const { url } = req.body;
-  dns.lookup(url, {}, (err) => {
-    if (err) {
-      res.json({ error: "invalid url" });
+  dns.lookup(urlParser.parse(url).hostname, {}, (err,address) => {
+    if (!address) {
+      res.json({ error: 'invalid url' });
       return;
     }
     const index = arr.findIndex((item) => item === url);
@@ -37,9 +39,9 @@ app.post("/api/shorturl", function (req, res) {
 app.get("/api/shorturl/:id", (req, res) => {
   const { id } = req.params;
   const url = arr[+id];
-  res.redirect(`https://${url}`);
+  res.redirect(url);
 });
 
-app.listen(port, function () {
+app.listen(port, function() {
   console.log(`Listening on port ${port}`);
 });
